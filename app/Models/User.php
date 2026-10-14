@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['role', 'phone', 'password', 'name', 'email'])]
 class User extends Authenticatable
@@ -27,5 +28,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function properties(): HasMany
+    {
+        return $this->hasMany(Property::class, 'landlord_id');
+    }
+
+    public function leases(): HasMany
+    {
+        return $this->hasMany(Lease::class, 'tenant_id');
     }
 }
