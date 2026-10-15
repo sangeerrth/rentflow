@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class Lease extends Model
 {
     protected $fillable = [
@@ -30,4 +30,9 @@ class Lease extends Model
     {
         return $this->belongsTo(User::class, 'tenant_id');
     }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }  
 }

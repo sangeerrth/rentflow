@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\LeaseController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\UnitController;
@@ -11,13 +12,13 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Any logged-in user (landlord, tenant or admin)
+// Any logged-in user (the policies decide who may view each record)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn (Request $request) => $request->user());
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // The policy decides who may view: the landlord or the tenant on it
     Route::get('/leases/{lease}', [LeaseController::class, 'show']);
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show']);
 });
 
 // Landlords only
@@ -28,9 +29,12 @@ Route::middleware(['auth:sanctum', 'role:landlord'])->group(function () {
     Route::get('/leases', [LeaseController::class, 'index']);
     Route::post('/units/{unit}/leases', [LeaseController::class, 'store']);
     Route::post('/leases/{lease}/terminate', [LeaseController::class, 'terminate']);
+
+    Route::get('/invoices', [InvoiceController::class, 'index']);
 });
 
 // Tenants only
 Route::middleware(['auth:sanctum', 'role:tenant'])->group(function () {
     Route::get('/my-leases', [LeaseController::class, 'myLeases']);
+    Route::get('/my-invoices', [InvoiceController::class, 'myInvoices']);
 });
