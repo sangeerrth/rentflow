@@ -8,3 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 Schedule::command('invoices:generate')->monthlyOn(1, '00:30');
+Schedule::command('invoices:apply-late-fees')->dailyAt('01:00')->withoutOverlapping();
