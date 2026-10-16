@@ -14,4 +14,9 @@ class InvoicePolicy
         return $lease->tenant_id === $user->id
             || $lease->unit->property->landlord_id === $user->id;
     }
+
+    public function pay(User $user, Invoice $invoice): bool
+    {
+        return $invoice->lease->tenant_id === $user->id;
+    }
 }

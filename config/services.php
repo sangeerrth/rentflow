@@ -13,6 +13,11 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    'razorpay' => [
+    'key'            => env('RAZORPAY_KEY'),
+    'secret'         => env('RAZORPAY_SECRET'),
+    'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+    ],
 
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),

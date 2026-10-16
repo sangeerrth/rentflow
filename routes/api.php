@@ -7,10 +7,13 @@ use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\UnitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\RazorpayWebhookController;
 
 // Public: no login needed
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handle']);
 
 // Any logged-in user (the policies decide who may view each record)
 Route::middleware('auth:sanctum')->group(function () {
@@ -37,4 +40,6 @@ Route::middleware(['auth:sanctum', 'role:landlord'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:tenant'])->group(function () {
     Route::get('/my-leases', [LeaseController::class, 'myLeases']);
     Route::get('/my-invoices', [InvoiceController::class, 'myInvoices']);
+    Route::post('/invoices/{invoice}/pay', [PaymentController::class, 'createOrder']);
+    Route::post('/payments/verify', [PaymentController::class, 'verify']);
 });
