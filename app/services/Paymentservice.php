@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Mail\PaymentReceipt;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentService
 {
@@ -13,7 +15,7 @@ class PaymentService
      */
     public function markPaid(int $paymentId, string $razorpayPaymentId): bool
     {
-        return DB::transaction(function () use ($paymentId, $razorpayPaymentId) {
+        $newlyPaid = DB::transaction(function () use ($paymentId, $razorpayPaymentId) {
             $payment = Payment::with('invoice')
                 ->lockForUpdate()
                 ->findOrFail($paymentId);
@@ -35,5 +37,23 @@ class PaymentService
 
             return true;
         });
+
+        // Only after the transaction has committed
+        if ($newlyPaid) {
+            $this->sendReceipts($paymentId);
+        }
+
+        return $newlyPaid;
+    }
+
+    private function sendReceipts(int $paymentId): void
+    {
+        $payment = Payment::with('invoice.lease.tenant', 'invoice.lease.unit.property.landlord')
+            ->findOrFail($paymentId);
+
+        $lease = $payment->invoice->lease;
+
+        Mail::to($lease->tenant)->queue(new PaymentReceipt($payment, forLandlord: false));
+        Mail::to($lease->unit->property->landlord)->queue(new PaymentReceipt($payment, forLandlord: true));
     }
 }
