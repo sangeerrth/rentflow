@@ -22,27 +22,36 @@
             'Authorization': 'Bearer ' + document.getElementById('token').value.trim()
         });
 
+        async function verify(response) {
+            const v = await fetch('/api/payments/verify', {
+                method: 'POST', headers: headers(), body: JSON.stringify(response)
+            });
+            out.textContent = JSON.stringify(await v.json(), null, 2);
+        }
+
         document.getElementById('payBtn').onclick = async () => {
             const id = document.getElementById('invoice').value;
             const res = await fetch('/api/invoices/' + id + '/pay', { method: 'POST', headers: headers() });
             const order = await res.json();
             if (!res.ok) { out.textContent = JSON.stringify(order, null, 2); return; }
 
-            const rzp = new Razorpay({
+            if (order.gateway === 'fake') {
+                const f = await fetch('/api/dev/fake-gateway/pay', {
+                    method: 'POST', headers: headers(), body: JSON.stringify({ order_id: order.order_id })
+                });
+                await verify(await f.json());
+                return;
+            }
+
+            new Razorpay({
                 key: order.key,
                 amount: order.amount,
                 currency: order.currency,
                 order_id: order.order_id,
                 name: 'RentFlow',
                 description: 'Rent invoice #' + id,
-                handler: async (response) => {
-                    const v = await fetch('/api/payments/verify', {
-                        method: 'POST', headers: headers(), body: JSON.stringify(response)
-                    });
-                    out.textContent = JSON.stringify(await v.json(), null, 2);
-                }
-            });
-            rzp.open();
+                handler: verify
+            }).open();
         };
     </script>
 </body>

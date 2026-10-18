@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Contracts\PaymentGateway;
+use App\Services\Gateways\FakeGateway;
+use App\Services\Gateways\RazorpayGateway;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +14,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(PaymentGateway::class, function () {
+            return config('services.payment_gateway') === 'razorpay'
+                ? new RazorpayGateway()
+                : new FakeGateway();
+        });
     }
 
     /**
